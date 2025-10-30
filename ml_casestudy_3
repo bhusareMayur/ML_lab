@@ -1,0 +1,61 @@
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.feature_extraction.text import CountVectorizer
+
+from sklearn.naive_bayes import MultinomialNB
+
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+
+
+df = pd.read_csv("spam.csv", encoding='latin-1')[['v1', 'v2']]
+
+df.columns = ['label', 'message']
+
+df['label'] = df['label'].map({'ham': 0, 'spam': 1})
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(df['message'], df['label'], test_size=0.2, random_state=42)
+
+
+
+vectorizer = CountVectorizer(stop_words='english')
+
+X_train_vectorized = vectorizer.fit_transform(X_train)
+
+X_test_vectorized = vectorizer.transform(X_test)
+
+
+
+model = MultinomialNB()
+
+model.fit(X_train_vectorized, y_train)
+
+
+
+y_pred = model.predict(X_test_vectorized)
+
+
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+
+print("Classification Report:\n", classification_report(y_test, y_pred))
+
+
+
+sample_email = ["Congratulations! You've won a $1000 Walmart gift card. Click here to claim now."]
+
+sample_vectorized = vectorizer.transform(sample_email)
+
+prediction = model.predict(sample_vectorized)
+
+
+
+print("Test Email:", sample_email[0])
+
+print("Prediction:", "Spam" if prediction[0] == 1 else "Not Spam")
